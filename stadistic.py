@@ -1,12 +1,17 @@
 # -*- coding: utf-8 -*-
 import os
 import requests
+from dotenv import load_dotenv
+
+# Cargar variables de entorno desde .env
+load_dotenv()
+
 # Configura tu usuario y tu token personal de GitHub aquí
 USER = os.getenv("USER")
 TOKEN = os.getenv("TOKEN")
 
 if not USER or not TOKEN:
-    raise ValueError("Las variables de entorno GITHUB_USER y GITHUB_TOKEN deben estar configuradas.")
+    raise ValueError("Las variables de entorno USER y TOKEN deben estar configuradas en el archivo .env")
 headers = {
     "Authorization": f"token {TOKEN}",
     "Accept": "application/vnd.github+json"
