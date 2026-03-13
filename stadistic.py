@@ -7,11 +7,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Configura tu usuario y tu token personal de GitHub aquí
-USER = os.getenv("USER")
+GITHUB_USER = os.getenv("GITHUB_USER")
 TOKEN = os.getenv("TOKEN")
 
-if not USER or not TOKEN:
-    raise ValueError("Las variables de entorno USER y TOKEN deben estar configuradas en el archivo .env")
+if not GITHUB_USER or not TOKEN:
+    raise ValueError("Las variables de entorno GITHUB_USER y TOKEN deben estar configuradas en el archivo .env")
 headers = {
     "Authorization": f"token {TOKEN}",
     "Accept": "application/vnd.github+json"
@@ -45,7 +45,10 @@ def get_commit_count(repo_full_name, user):
     while True:
         url = f"https://api.github.com/repos/{repo_full_name}/commits?author={user}&per_page=100&page={page}"
         resp = requests.get(url, headers=headers)
+        if resp.status_code == 409:  # Repo vacío
+            break
         if resp.status_code != 200:
+            print(f"  [WARN] {repo_full_name} -> HTTP {resp.status_code}: {resp.json().get('message', '')}")
             break
         commits = resp.json()
         count += len(commits)
@@ -55,14 +58,14 @@ def get_commit_count(repo_full_name, user):
     return count
 
 def main():
-    repos = get_repos(USER)
+    repos = get_repos(GITHUB_USER)
     total_commits = 0
     repos_with_commits = 0
 
     print(f"Repositorios encontrados: {len(repos)}")
     for repo in repos:
         repo_name = repo["full_name"]
-        commits = get_commit_count(repo_name, USER)
+        commits = get_commit_count(repo_name, GITHUB_USER)
         if commits > 0:
             repos_with_commits += 1
         total_commits += commits
